@@ -9,7 +9,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
  
     teleop_node = Node(
-        package='itav_agv_conroller',
+        package='itav_agv_controller',
         executable='teleop',
         name='teleop_node',
         emulate_tty=True,

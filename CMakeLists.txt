@@ -10,6 +10,12 @@ find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 # find_package(OpenCV REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -25,29 +31,68 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+include_directories(
+  include
+  ${EIGEN3_INCLUDE_DIR}
+)
+
 install(
   DIRECTORY 
     launch
     params
   DESTINATION 
-    share/${PROJECT_NAME})
-install(PROGRAMS
-  scripts/itav_agv_controller.py
-  DESTINATION lib/${PROJECT_NAME})
+    share/${PROJECT_NAME}
+)
+
+install(
+  PROGRAMS
+    scripts/itav_agv_controller.py
+  DESTINATION 
+  lib/${PROJECT_NAME}
+)
 
 
 
 # add_executable(dwa src/dwa.cpp)
-# target_link_libraries(dwa ${OpenCV_LIBS} )
+
+add_executable(controller 
+  src/itav_agv_controller.cpp
+  src/dwa.cpp
+  )
+
+
+add_executable(teleop src/itav_agv_teleop.cpp)
+ament_target_dependencies(teleop 
+  rclcpp 
+  geometry_msgs
+  )
+
+ament_target_dependencies(controller
+  rclcpp 
+  geometry_msgs
+  nav_msgs
+  std_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  visualization_msgs
+  )
+install(TARGETS
+teleop
+DESTINATION lib/${PROJECT_NAME})
+
+target_link_libraries(controller 
+  ${Boost_SYSTEM_LIBRARY}
+  ${EIGEN3_LIBRARIES}
+  )
 
 # install(TARGETS
 #   dwa
 #   DESTINATION lib/${PROJECT_NAME}
 # )
-ament_package()
-
-add_executable(teleop src/itav_agv_teleop.cpp)
-ament_target_dependencies(teleop rclcpp geometry_msgs)
 install(TARGETS
-teleop
-DESTINATION lib/${PROJECT_NAME})
+  controller
+  DESTINATION lib/${PROJECT_NAME}
+)
+ament_package()

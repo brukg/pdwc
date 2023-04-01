@@ -141,7 +141,7 @@ int main(int argc, char** argv){
 
   // node init
   rclcpp::init(argc,argv);
-  auto node = rclcpp::Node::make_shared("teleop");
+  auto node = rclcpp::Node::make_shared("teleop_node");
   // define publisher
   auto _pub = node->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
