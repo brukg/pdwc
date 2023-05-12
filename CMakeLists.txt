@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(itav_agv_controller)
+project(pdwa)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -8,14 +8,18 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(cartographer_ros_msgs REQUIRED)
 # find_package(OpenCV REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -35,6 +39,7 @@ endif()
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 install(
@@ -47,7 +52,8 @@ install(
 
 install(
   PROGRAMS
-    scripts/itav_agv_controller.py
+    scripts/pdwa.py
+    scripts/transform.py
   DESTINATION 
   lib/${PROJECT_NAME}
 )
@@ -57,8 +63,10 @@ install(
 # add_executable(dwa src/dwa.cpp)
 
 add_executable(controller 
-  src/itav_agv_controller.cpp
+  src/pdwa.cpp
   src/dwa.cpp
+  src/state_lattice_planner.cpp
+  # src/lpastar.cpp
   )
 
 
@@ -74,6 +82,7 @@ ament_target_dependencies(controller
   nav_msgs
   std_msgs
   tf2
+  cartographer_ros_msgs
   tf2_ros
   tf2_geometry_msgs
   visualization_msgs
