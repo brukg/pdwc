@@ -12,8 +12,8 @@
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <cartographer_ros_msgs/srv/start_trajectory.hpp>
-#include "pdwa/dwa.hpp"
-#include "pdwa/a_star.hpp"
+#include "pdwc/dwa.hpp"
+#include "pdwc/a_star.hpp"
 #include <Eigen/Dense>
 
 class ITAVController : public rclcpp::Node

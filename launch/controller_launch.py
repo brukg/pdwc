@@ -8,10 +8,10 @@ from launch_ros.actions import Node
 # this is the function launch  system will look for
 def generate_launch_description():
     ld = LaunchDescription()
-    param_file = os.path.join(get_package_share_directory('pdwa'), 'params', 'params.yaml')
+    param_file = os.path.join(get_package_share_directory('pdwc'), 'params', 'params.yaml')
 
     controller_node = Node(
-        package='pdwa',
+        package='pdwc',
         executable='controller',
         emulate_tty=True,
         output="screen",
@@ -48,7 +48,7 @@ def generate_launch_description():
         
     )
     transform_node = Node(
-        package='pdwa',
+        package='pdwc',
         executable='transform.py',
         name='transform_node',
         emulate_tty=True,

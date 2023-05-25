@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include <pdwa/pdwa.hpp>
+#include <pdwc/pdwc.hpp>
 
 ITAVController::ITAVController(const rclcpp::NodeOptions& options) : Node("dwa_controller")
 {

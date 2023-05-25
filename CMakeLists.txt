@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(pdwa)
+project(pdwc)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -52,7 +52,7 @@ install(
 
 install(
   PROGRAMS
-    scripts/pdwa.py
+    scripts/pdwc.py
     scripts/transform.py
   DESTINATION 
   lib/${PROJECT_NAME}
@@ -63,7 +63,7 @@ install(
 # add_executable(dwa src/dwa.cpp)
 
 add_executable(controller 
-  src/pdwa.cpp
+  src/pdwc.cpp
   src/dwa.cpp
   src/state_lattice_planner.cpp
   # src/lpastar.cpp
