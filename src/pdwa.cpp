@@ -86,8 +86,8 @@ ITAVController::ITAVController(const rclcpp::NodeOptions& options) : Node("dwa_c
         "tracker/obstacles_state", 10, std::bind(&ITAVController::obstacleCallback, this, std::placeholders::_1));
 
     grid_map_pub = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map", 10);
-    footprint_pub = this->create_publisher<visualization_msgs::msg::Marker>("footprint", 10);
-    respones_time_pub = this->create_publisher<std_msgs::msg::Float32MultiArray>("response_time", 10);
+    footprint_pub = this->create_publisher<visualization_msgs::msg::Marker>("controller/footprint", 10);
+    respones_time_pub = this->create_publisher<std_msgs::msg::Float32MultiArray>("controller/response_time", 10);
     // ~~~~~~~~~~~~~
     // ob_pub = this->create_publisher<visualization_msgs::msg::MarkerArray>("obstacles", 10);
     RCLCPP_INFO(this->get_logger(), "Subscribers initialized");
@@ -259,7 +259,7 @@ void ITAVController::obstacleCallback(const std_msgs::msg::Float32MultiArray::Sh
 
     // RCLCPP_INFO(this->get_logger(), "Obstacles received size: %d", size_/4);
 
-    if (size_ == 0 || grid.size() == 0) {
+    if (size_ == 0 || grid.rows() == 0) {
       obstacles = Eigen::MatrixXd(2, 4);
       obstacles << 8000, 8000, 0, 0.0,
                    8000, 8000, 0, 0.0;
@@ -268,7 +268,7 @@ void ITAVController::obstacleCallback(const std_msgs::msg::Float32MultiArray::Sh
         obstacles = Eigen::MatrixXd(int(size_ / 4), 4);
 
         for (int i = 0; i < int(size_ / 4); i++) {
-          
+        // RCLCPP_INFO(this->get_logger(), "msg data: %f, %f,", msg_data[4*i], msg_data[4*i + 1]);        
           // add obstacle to the map
           // int x = int((obstacles(i, 0) - map_origin[0]) / map_resolution);
           // int y = int((obstacles(i, 1) - map_origin[1]) / map_resolution);
@@ -276,8 +276,12 @@ void ITAVController::obstacleCallback(const std_msgs::msg::Float32MultiArray::Sh
           
           // remove the obstacles that are too close to the robot since it is the robot itself
           bool in_robot_ = (sqrt(pow(msg_data[4*i] - current_pose[0], 2) + pow(msg_data[4*i + 1] - current_pose[1], 2)) < 1.5);
+          // RCLCPP_INFO(this->get_logger(), "robot pose: %f, in robot: %d", current_pose[0], in_robot_);
           // check if the obstacle is already in the map and remove it
-          bool in_map_ = (grid.transpose().coeff(int((msg_data[4*i] - map_origin[0])/map_resolution), int((msg_data[4*i + 1] - map_origin[1])/map_resolution)) > 0);
+          int x = int((msg_data[4*i] - map_origin[0]) / map_resolution);
+          int y = int((msg_data[4*i + 1] - map_origin[1]) / map_resolution);
+          bool in_map_ = (x>=0 && y>=0) ? (grid.transpose().coeff(x, y) > 0): false;
+          // RCLCPP_INFO(this->get_logger(), "in map: %d", in_map_);
           if (in_robot_ || in_map_ )  { 
             // if (in_robot_) RCLCPP_INFO(this->get_logger(), "removed internal obstacle %f, %f", msg_data[4*i], msg_data[4*i + 1]);
             // if (in_map_) RCLCPP_INFO(this->get_logger(), "removed map obstacle %f, %f", msg_data[4*i], msg_data[4*i + 1]);
@@ -285,26 +289,17 @@ void ITAVController::obstacleCallback(const std_msgs::msg::Float32MultiArray::Sh
             obstacles(i, 1) = -1;
             obstacles(i, 2) = -1;
             obstacles(i, 3) = -1;
-            // RCLCPP_INFO(this->get_logger(), "Obstacle value: %f, %f, %f, %f", obstacles.coeff(i, 0), obstacles.coeff(i, 1), obstacles.coeff(i, 2), obstacles.coeff(i, 3));
 
             continue;
           }
          
           // rotate the obstacle to the robot frame
           // double x = msg_data[4*i], y = msg_data[4*i + 1], vx = msg_data[4*i + 2], vy = msg_data[4*i + 3];
-          // RCLCPP_INFO(this->get_logger(), "Obstacle received: %f, %f, %f, %f", x, y, vx, vy);
           obstacles(i, 0) = msg_data[4*i];
           obstacles(i, 1) = msg_data[4*i + 1];
           obstacles(i, 2) = msg_data[4*i + 2];
           obstacles(i, 3) = msg_data[4*i + 3];
-          // RCLCPP_INFO(this->get_logger(), "Obstacle received: %f, %f, %f, %f", obstacles.coeff(i, 0), obstacles.coeff(i, 1), obstacles.coeff(i, 2), obstacles.coeff(i, 3));
 
-          // // grid(x, y) = 100;
-          // if (x < 0 || x >= map_height || y < 0 || y >= map_width) {
-          //   RCLCPP_INFO(this->get_logger(), "Obstacle out of map: %f, %f", obstacles.coeff(i, 0), obstacles.coeff(i, 1));
-          //   continue;
-          // }
-          // // grid_map.data[x * map_width + y] = 100;
         }
        
     }

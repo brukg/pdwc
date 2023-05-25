@@ -1,0 +1,22 @@
+/dwa_controller:
+  ros__parameters:
+    # footprint: "[ [1.7, 0.6], [1.7, -0.6], [-0.6, -0.6], [-0.6, 0.6] ]"
+    rate': 15
+    # max_speed': 2.275
+    # min_speed': -2.275
+    max_speed': 0.5275
+    min_speed': -0.5275
+    max_yawrate': 1.0
+    max_accel': 4.0
+    max_dyawrate': 100.0 #600.0
+    v_reso': 0.3
+    yawrate_reso': 0.051
+    dt': 0.1
+    predict_time': 3.0
+    to_goal_cost_gain': 1.0
+    speed_cost_gain': 0.750
+    obstacle_cost_gain': 2.50
+    robot_radius': 0.5
+    obstacle_radius': 0.25
+    obstacle_margin': 1.0
+    collision_threshold': 0.005
