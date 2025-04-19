@@ -1,6 +1,11 @@
 #include <rclcpp/rclcpp.hpp>
 #include <cpdwc/cpdwc.hpp>
 
+
+namespace cpdwc
+{
+
+
 CPDWCController::CPDWCController(const rclcpp::NodeOptions& options) : Node("pdwc_controller")
 {
 
@@ -83,7 +88,7 @@ CPDWCController::CPDWCController(const rclcpp::NodeOptions& options) : Node("pdw
     grid_map_sub = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
         "map", 1, std::bind(&CPDWCController::gridMapCallback, this, std::placeholders::_1));
     obstacle_sub = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-        "tracker/obstacles_state", 10, std::bind(&CPDWCController::obstacleCallback, this, std::placeholders::_1));
+        "cpdwc_tracker/obstacles_state", 10, std::bind(&CPDWCController::obstacleCallback, this, std::placeholders::_1));
 
     grid_map_pub = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map", 10);
     footprint_pub = this->create_publisher<visualization_msgs::msg::Marker>("controller/footprint", 10);
@@ -394,3 +399,22 @@ void CPDWCController::controller()
   } //else RCLCPP_INFO(this->get_logger(), "Goal not set");
 
 }
+
+
+void CPDWCController::setMap(Eigen::MatrixXd map, double resolution, Eigen::Vector2d origin)
+{
+  dwa->setMap(map, resolution, origin);
+}
+void CPDWCController::setGoal(Point goal)
+{
+  dwa->setGoal(goal);
+}
+void CPDWCController::setObstacles(Eigen::MatrixXd ob)
+{
+  dwa->setObstacles(ob);
+}
+Result CPDWCController::CPDWCControl()
+{
+  return dwa->DWAControl();
+}
+} // namespace cpdwc
