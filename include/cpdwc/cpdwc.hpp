@@ -12,14 +12,13 @@
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <cartographer_ros_msgs/srv/start_trajectory.hpp>
-#include "pdwc/dwa.hpp"
-#include "pdwc/a_star.hpp"
-#include <Eigen/Dense>
+#include "cpdwc/dwa.hpp"
+#include <eigen3/Eigen/Dense>
 
-class ITAVController : public rclcpp::Node
+class CPDWCController : public rclcpp::Node
 {
 public:
-    ITAVController(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+    CPDWCController(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
 private:
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
@@ -57,7 +56,6 @@ private:
     double map_resolution;
     int map_height, map_width;
     std::vector<std::array<float, 2>> footprint;
-    std::shared_ptr<AStar> astar;
 };
 
 #endif // ITAV_AGV_CONTROLLER_H

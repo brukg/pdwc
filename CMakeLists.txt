@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(pdwc)
+project(cpdwc)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -27,6 +27,62 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
+# Install headers
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+# add_executable(dwa src/dwa.cpp)
+
+add_library(cpdwc 
+  src/cpdwc.cpp
+  src/dwa.cpp
+  src/state_lattice_planner.cpp
+)
+
+
+
+
+add_executable(controller 
+  src/main.cpp
+)
+
+add_executable(teleop src/itav_agv_teleop.cpp)
+ament_target_dependencies(teleop 
+  rclcpp 
+  geometry_msgs
+  )
+
+ament_target_dependencies(cpdwc
+  rclcpp 
+  geometry_msgs
+  nav_msgs
+  std_msgs
+  tf2
+  cartographer_ros_msgs
+  tf2_ros
+  tf2_geometry_msgs
+  visualization_msgs
+  )
+
+
+install(TARGETS
+teleop
+DESTINATION lib/${PROJECT_NAME})
+
+target_link_libraries(cpdwc 
+  ${Boost_SYSTEM_LIBRARY}
+  ${EIGEN3_LIBRARIES}
+)
+
+
+install(TARGETS
+  cpdwc
+  controller
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(
   DIRECTORY 
     launch
@@ -44,43 +100,24 @@ install(
 
 
 
-# add_executable(dwa src/dwa.cpp)
+# Export include directories
+ament_export_include_directories(include)
 
-add_executable(controller 
-  src/pdwc.cpp
-  src/dwa.cpp
-  src/state_lattice_planner.cpp
-  )
-
-
-add_executable(teleop src/itav_agv_teleop.cpp)
-ament_target_dependencies(teleop 
-  rclcpp 
-  geometry_msgs
-  )
-
-ament_target_dependencies(controller
-  rclcpp 
+ament_export_dependencies(
+  rclcpp
   geometry_msgs
   nav_msgs
   std_msgs
   tf2
-  cartographer_ros_msgs
   tf2_ros
   tf2_geometry_msgs
   visualization_msgs
-  )
-install(TARGETS
-teleop
-DESTINATION lib/${PROJECT_NAME})
-
-target_link_libraries(controller 
-  ${Boost_SYSTEM_LIBRARY}
-  ${EIGEN3_LIBRARIES}
-  )
-
-install(TARGETS
-  controller
-  DESTINATION lib/${PROJECT_NAME}
+  cartographer_ros_msgs
 )
+
+target_link_libraries(controller
+  cpdwc
+)
+
+
 ament_package()

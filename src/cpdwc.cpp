@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
-#include <pdwc/pdwc.hpp>
+#include <cpdwc/cpdwc.hpp>
 
-ITAVController::ITAVController(const rclcpp::NodeOptions& options) : Node("dwa_controller")
+CPDWCController::CPDWCController(const rclcpp::NodeOptions& options) : Node("pdwc_controller")
 {
 
     // Initialize DWA
@@ -73,17 +73,17 @@ ITAVController::ITAVController(const rclcpp::NodeOptions& options) : Node("dwa_c
     dwa->setFootprint(result);
 
     odom_sub = this->create_subscription<nav_msgs::msg::Odometry>(
-        "odom", 10, std::bind(&ITAVController::odomCallback, this, std::placeholders::_1));
+        "odom", 10, std::bind(&CPDWCController::odomCallback, this, std::placeholders::_1));
     tracked_pose = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-        "global_pose", 10, std::bind(&ITAVController::poseCallback, this, std::placeholders::_1));
+        "global_pose", 10, std::bind(&CPDWCController::poseCallback, this, std::placeholders::_1));
     goal_sub = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-        "goal_pose", 10, std::bind(&ITAVController::goalCallback, this, std::placeholders::_1));
+        "goal_pose", 10, std::bind(&CPDWCController::goalCallback, this, std::placeholders::_1));
     cmd_vel_pub = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     trajectory_pub = this->create_publisher<nav_msgs::msg::Path>("trajectory", 10);
     grid_map_sub = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
-        "map", 1, std::bind(&ITAVController::gridMapCallback, this, std::placeholders::_1));
+        "map", 1, std::bind(&CPDWCController::gridMapCallback, this, std::placeholders::_1));
     obstacle_sub = this->create_subscription<std_msgs::msg::Float32MultiArray>(
-        "tracker/obstacles_state", 10, std::bind(&ITAVController::obstacleCallback, this, std::placeholders::_1));
+        "tracker/obstacles_state", 10, std::bind(&CPDWCController::obstacleCallback, this, std::placeholders::_1));
 
     grid_map_pub = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map", 10);
     footprint_pub = this->create_publisher<visualization_msgs::msg::Marker>("controller/footprint", 10);
@@ -176,10 +176,10 @@ ITAVController::ITAVController(const rclcpp::NodeOptions& options) : Node("dwa_c
 
 
     // Timer for the controller
-    timer = this->create_wall_timer(std::chrono::milliseconds(int(1000/rate)), std::bind(&ITAVController::controller, this));
+    timer = this->create_wall_timer(std::chrono::milliseconds(int(1000/rate)), std::bind(&CPDWCController::controller, this));
 }
 
-void ITAVController::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+void CPDWCController::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     // Process the data
     // current_pose[0] = msg->pose.pose.position.x;
     // current_pose[1] = msg->pose.pose.position.y;
@@ -191,7 +191,7 @@ void ITAVController::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
     dwa-> setState(current_pose);
 }
 
-void ITAVController::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) 
+void CPDWCController::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) 
 {
   // RCLCPP_INFO(this->get_logger(), "Pose received");
   current_pose[0] = msg->pose.pose.position.x;
@@ -230,7 +230,7 @@ void ITAVController::poseCallback(const geometry_msgs::msg::PoseWithCovarianceSt
   footprint_pub->publish(footprint_marker);
 
 }
-void ITAVController::goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) 
+void CPDWCController::goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) 
 {
   // RCLCPP_INFO(this->get_logger(), "Goal received");
   goal_pose [0] = msg->pose.position.x;
@@ -243,7 +243,7 @@ void ITAVController::goalCallback(const geometry_msgs::msg::PoseStamped::SharedP
 
 }
 
-void ITAVController::obstacleCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
+void CPDWCController::obstacleCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {
     // first remove the obstacle that is the same as the current robot pose by checking the distance
     auto msg_data = msg->data;
     int size_ = msg_data.size();
@@ -311,12 +311,12 @@ void ITAVController::obstacleCallback(const std_msgs::msg::Float32MultiArray::Sh
     dwa->setObstacles(obstacles);
 }
 
-void ITAVController::gridMapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg) {
+void CPDWCController::gridMapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg) {
     // Process the grid map
 
     // dwa->setMap(grid);
 }
-void ITAVController::controller()
+void CPDWCController::controller()
 {   
   // RCLCPP_INFO(this->get_logger(), "Controller");
   // RCLCPP_INFO(this->get_logger(), "Current pose: %f, %f, %f", current_pose[0], current_pose[1], current_pose[2]);
@@ -393,11 +393,4 @@ void ITAVController::controller()
 
   } //else RCLCPP_INFO(this->get_logger(), "Goal not set");
 
-}
-int main(int argc, char** argv) {
-  rclcpp::init(argc, argv);
-  auto node = std::make_shared<ITAVController>();
-  rclcpp::spin(node);
-  rclcpp::shutdown();
-  return 0;
 }
