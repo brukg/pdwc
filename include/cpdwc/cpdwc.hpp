@@ -15,10 +15,18 @@
 #include "cpdwc/dwa.hpp"
 #include <eigen3/Eigen/Dense>
 
-class CPDWCController : public rclcpp::Node
+namespace cpdwc
+{
+
+class CPDWController : public rclcpp::Node
 {
 public:
-    CPDWCController(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+    CPDWController(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+    void setState(Eigen::VectorXd current_pose);
+    void setMap(Eigen::MatrixXd map, double resolution, Eigen::Vector2d origin);
+    void setGoal(Point goal);
+    void setObstacles(Eigen::MatrixXd ob);
+    Result CPDWCControl();
 
 private:
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
@@ -57,5 +65,6 @@ private:
     int map_height, map_width;
     std::vector<std::array<float, 2>> footprint;
 };
+}
 
 #endif // ITAV_AGV_CONTROLLER_H
